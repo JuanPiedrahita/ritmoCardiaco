@@ -33,7 +33,10 @@ router.post('/postLecturas', function (request, response) {
 	console.log("body", request.body);
 	//console.log("request", request);
   	//console.log("data", request.query.data);
-	lecturas.push(JSON.parse(JSON.stringify(request.body)));  	
+	var temp = JSON.parse(JSON.stringify(request.body));
+	temp.ritmo = parseInt(temp.ritmo)
+	temp.tiempo = parseInt(temp.tiempo)
+	lecturas.push(temp);	
   	response = setHeaders(response);
   	response.send(JSON.stringify(lecturas));
   	response.end;
