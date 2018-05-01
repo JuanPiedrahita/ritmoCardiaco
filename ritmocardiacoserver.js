@@ -2,6 +2,8 @@ var express = require("express");
 var app = express();
 var bodyParser = require("body-parser");
 var methodOverride = require("method-override");
+var postgres = require("./postgresDB.js");
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -12,12 +14,6 @@ var setHeaders = function(response){
   	response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   	return response;
 }
-
-var lecturas = [];
-lecturas.push({
-	"tiempo":1,
-	"ritmo":1
-})
 
 var router = express.Router();
 
@@ -44,11 +40,31 @@ router.post('/postLecturas', function (request, response) {
 
 app.use(router);
 
-var server = app.listen(4040, function () {
-  "use strict";
-
-  var host = '0.0.0.0',
-      port = server.address().port;
-
-  console.log(' Server is listening at http://%s:%s', host, port);
+postgres.connect()
+.then(()=>{
+	console.log("Postgres connected");
+	var server = app.listen(4040, function () {
+		"use strict";
+		
+		var host = '0.0.0.0',
+			port = server.address().port;
+		
+		console.log(' Server is listening at http://%s:%s', host, port);
+	});
+	  
+})
+.catch(()=>{
+	console.log("ERROR: Couldn't connect, please verify config.json");
+	console.log("closing");
+	process.exit(2);
 });
+
+//para cerrar conexión
+process.on('SIGINT',function(){
+	console.log("Clossing connection");
+	postgres.end()
+	.then(()=>{
+		console.log("Connecion closed");
+		process.exit(2);
+	})
+})
