@@ -17,12 +17,12 @@
 -- DROP TABLE IF EXISTS public.paciente CASCADE;
 CREATE TABLE public.paciente(
 	id serial NOT NULL,
-	documento integer NOT NULL,
+	documento varchar(11) NOT NULL,
 	nombre varchar(50) NOT NULL,
 	apellido varchar(50) NOT NULL,
 	edad integer NOT NULL,
-	peso numeric(3,2) NOT NULL,
-	estatura numeric(3,2) NOT NULL,
+	peso numeric(5,2) NOT NULL,
+	estatura numeric(5,2) NOT NULL,
 	CONSTRAINT pk_paciente PRIMARY KEY (id)
 
 );
@@ -35,8 +35,8 @@ ALTER TABLE public.paciente OWNER TO postgres;
 CREATE TABLE public.contacto(
 	id serial NOT NULL,
 	paciente integer NOT NULL,
-	correo varchar NOT NULL,
-	telefono integer,
+	correo varchar(50) NOT NULL,
+	telefono varchar(10),
 	direccion varchar(50),
 	CONSTRAINT pk_contacto PRIMARY KEY (id)
 

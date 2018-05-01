@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.1-beta1" last-position="0,27" last-zoom="1"
+<dbmodel pgmodeler-ver="0.9.1-beta1" last-position="0,25" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="ritmo_cardiaco" is-template="false" allow-conns="true">
 </database>
@@ -19,7 +19,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="serial" length="0"/>
 	</column>
 	<column name="documento" not-null="true">
-		<type name="integer" length="0"/>
+		<type name="varchar" length="11"/>
 	</column>
 	<column name="nombre" not-null="true">
 		<type name="varchar" length="50"/>
@@ -31,10 +31,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="integer" length="0"/>
 	</column>
 	<column name="peso" not-null="true">
-		<type name="numeric" length="3" precision="2"/>
+		<type name="numeric" length="5" precision="2"/>
 	</column>
 	<column name="estatura" not-null="true">
-		<type name="numeric" length="3" precision="2"/>
+		<type name="numeric" length="5" precision="2"/>
 	</column>
 	<constraint name="pk_paciente" type="pk-constr" table="public.paciente">
 		<columns names="id" ref-type="src-columns"/>
@@ -49,10 +49,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="serial" length="0"/>
 	</column>
 	<column name="correo" not-null="true">
-		<type name="varchar" length="0"/>
+		<type name="varchar" length="50"/>
 	</column>
 	<column name="telefono">
-		<type name="integer" length="0"/>
+		<type name="varchar" length="10"/>
 	</column>
 	<column name="direccion">
 		<type name="varchar" length="50"/>
