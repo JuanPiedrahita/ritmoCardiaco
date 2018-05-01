@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.1-beta1" last-position="0,27" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="ritmo_cardiaco" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="paciente">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="260" y="160"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="documento" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="nombre" not-null="true">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="apellido" not-null="true">
+		<type name="varchar" length="50"/>
+	</column>
+	<column name="edad" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="peso" not-null="true">
+		<type name="numeric" length="3" precision="2"/>
+	</column>
+	<column name="estatura" not-null="true">
+		<type name="numeric" length="3" precision="2"/>
+	</column>
+	<constraint name="pk_paciente" type="pk-constr" table="public.paciente">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="contacto">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="740" y="180"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="correo" not-null="true">
+		<type name="varchar" length="0"/>
+	</column>
+	<column name="telefono">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="direccion">
+		<type name="varchar" length="50"/>
+	</column>
+	<constraint name="pk_contacto" type="pk-constr" table="public.contacto">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="paciente" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="paciente_fk" index="1"/>
+	</customidxs>
+</table>
+
+<table name="medicion_ritmo_cardiaco">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="240" y="400"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="valor" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="tiempo" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="fecha" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="pk_medicion_ritmo_cardiaco" type="pk-constr" table="public.medicion_ritmo_cardiaco">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="paciente" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="paciente_fk" index="1"/>
+	</customidxs>
+</table>
+
+<table name="diagnostico">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="700" y="420"/>
+	<column name="id" not-null="true">
+		<type name="serial" length="0"/>
+	</column>
+	<column name="fecha" not-null="true">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="diagnostico" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="pk_diagnostico" type="pk-constr" table="public.diagnostico">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="paciente" index="1"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="paciente_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="paciente_has_many_contacto" type="rel1n"
+	 src-col-pattern="{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#9c3b78"
+	 src-table="public.paciente"
+	 dst-table="public.contacto"
+	 src-required="true" dst-required="false"/>
+
+<relationship name="paciente_has_many_medicion_ritmo_cardiaco" type="rel1n"
+	 src-col-pattern="{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#adf50a"
+	 src-table="public.paciente"
+	 dst-table="public.medicion_ritmo_cardiaco"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="paciente_has_many_diagnostico" type="rel1n"
+	 src-col-pattern="{st}"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#f2637e"
+	 src-table="public.paciente"
+	 dst-table="public.diagnostico"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>
