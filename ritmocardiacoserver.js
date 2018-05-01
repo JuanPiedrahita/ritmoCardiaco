@@ -41,7 +41,30 @@ router.post('/postLecturas', function (request, response) {
   	response.end;
 });
 
-//registrar un usario nuevo
+//obtener pacientes
+router.get('/obtenerPacientes',function(request,response){
+	response = setHeaders(response);
+	console.log("query",request.query);
+	var params = [];
+	var sql = "";
+	if(request.query.documento != undefined){
+		sql = "select * from paciente p, contacto c where p.id=c.id and p.documento like $1";
+		params.push(request.query.documento);
+	} else {
+		sql = "select * from paciente p, contacto c where p.id=c.id";
+	}
+	postgres.executeQuery(sql,params)
+	.then(res => {
+		console.log(res.rows);
+		response.status(200).send(res.rows).end();
+	})
+	.catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error leyendo pacientes"}).end();
+	})
+});
+
+//registrar un paciente nuevo
 router.post('/registrarPaciente',function(request,response){
 	response = setHeaders(response);
 	console.log("registrar paciente");
@@ -56,7 +79,7 @@ router.post('/registrarPaciente',function(request,response){
 			console.log("transaction begin");
 			console.log(parseFloat(paciente.estatura).toFixed(2));
 			const insertPacienteValues = [paciente.documento, paciente.nombre, paciente.apellido, parseInt(paciente.edad),parseFloat( paciente.peso).toFixed(2), parseFloat(paciente.estatura).toFixed(2)]
-			const { rows } = await client.query('INSERT INTO paciente(documento,nombre,apellido,edad,peso,estatura) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertPacienteValues)
+			const { rows } = await postgres.executeQuery('INSERT INTO paciente(documento,nombre,apellido,edad,peso,estatura) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertPacienteValues)
 			console.log("insert paciente");
 			const insertContactoVaules = [rows[0].id, paciente.correo, paciente.telefono, paciente.direccion]
 			await postgres.executeQuery('INSERT INTO contacto(paciente,correo,telefono,direccion) VALUES($1,$2,$3,$4)', insertContactoVaules)

@@ -3,7 +3,7 @@ const pg = require('pg');
 
 const connectionString = `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.db}`;
 
-global.client = new pg.Client(connectionString);
+const client = new pg.Client(connectionString);
 
 var connect = function(){
     return client.connect();
