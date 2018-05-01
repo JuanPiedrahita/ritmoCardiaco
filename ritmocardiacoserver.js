@@ -18,11 +18,21 @@ var router = express.Router();
 
 //obtener mediciones de un usuario
 //recibe documento del usario
-router.get('/', function (request, response) {
-  	response = setHeaders(response);
-  	response.contentType('application/json').status(200);
-  	response.send(JSON.stringify(lecturas));
-  	response.end;
+router.get('/obtenerMediciones', function (request, response) {
+	response = setHeaders(response);
+	console.log("query",request.query);
+	var params = [request.query.documento];
+	var sql = "select * from medicion_ritmo_cardiaco where paciente = (select id from paciente where documento like $1)";
+	postgres.executeQuery(sql,params)
+	.then(res => {
+		console.log(res.rows);
+		response.status(200).send(res.rows).end();
+	})
+	.catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error leyendo mediciones"}).end();
+	})
+});
 });
 
 //agregar mediciones de un usuario
