@@ -18,7 +18,7 @@ var router = express.Router();
 
 //obtener mediciones de un usuario
 //recibe documento del usario
-router.get('/getLecturas', function (request, response) {
+router.get('/', function (request, response) {
   	response = setHeaders(response);
   	response.contentType('application/json').status(200);
   	response.send(JSON.stringify(lecturas));
@@ -27,18 +27,35 @@ router.get('/getLecturas', function (request, response) {
 
 //agregar mediciones de un usuario
 //recibe documento del usuario
-router.post('/postLecturas', function (request, response) {
-	//console.log("params", request.query);
-	console.log("body", request.body);
-	//console.log("request", request);
-  	//console.log("data", request.query.data);
-	var temp = JSON.parse(JSON.stringify(request.body));
-	temp.ritmo = parseInt(temp.ritmo)
-	temp.tiempo = parseInt(temp.tiempo)
-	lecturas.push(temp);	
-  	response = setHeaders(response);
-  	response.send(JSON.stringify(lecturas));
-  	response.end;
+router.post('/registrarMedicion', function (request, response) {
+	response = setHeaders(response);
+	console.log("registrar medicion");
+	//console.log("body", request.body);
+	//var medicion = JSON.parse(JSON.stringify(request.body));
+	console.log("query",request.query);
+	var medicion = JSON.parse(JSON.stringify(request.query));
+	console.log("medicion",medicion);
+	(async () => {		
+		try {
+			await postgres.executeQuery('BEGIN')
+			console.log("transaction begin");
+			const insertMedicionValues = [medicion.documento,parseInt(medicion.valor),parseInt(medicion.tiempo),new Date(medicion.fecha)]
+			await postgres.executeQuery('insert into medicion_ritmo_cardiaco(paciente,valor,tiempo,fecha) values ((select id from paciente where documento like $1),$2,$3,$4)', insertMedicionValues)
+			console.log("insert medicion");
+			await postgres.executeQuery('COMMIT')
+			console.log("commit");
+			response.status(200).send({resultado: "medicion insertada exitosamente"}).end();
+		} catch (error) {
+			await client.query('ROLLBACK')
+			console.log(error);
+			response.status(500).send({ error : "error insertando usuario"}).end();
+		} finally {
+
+		}
+	})().catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error insertando medicion"}).end();
+	})	
 });
 
 //obtener pacientes
@@ -77,7 +94,6 @@ router.post('/registrarPaciente',function(request,response){
 		try {
 			await postgres.executeQuery('BEGIN')
 			console.log("transaction begin");
-			console.log(parseFloat(paciente.estatura).toFixed(2));
 			const insertPacienteValues = [paciente.documento, paciente.nombre, paciente.apellido, parseInt(paciente.edad),parseFloat( paciente.peso).toFixed(2), parseFloat(paciente.estatura).toFixed(2)]
 			const { rows } = await postgres.executeQuery('INSERT INTO paciente(documento,nombre,apellido,edad,peso,estatura) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertPacienteValues)
 			console.log("insert paciente");
