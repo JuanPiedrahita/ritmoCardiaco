@@ -33,7 +33,6 @@ router.get('/obtenerMediciones', function (request, response) {
 		response.status(500).send({ error : "error leyendo mediciones"}).end();
 	})
 });
-});
 
 //agregar mediciones de un usuario
 //recibe documento del usuario
