@@ -57,7 +57,7 @@ router.post('/registrarMedicion', function (request, response) {
 		} catch (error) {
 			await client.query('ROLLBACK')
 			console.log(error);
-			response.status(500).send({ error : "error insertando usuario"}).end();
+			response.status(500).send({ error : "error insertando medicion"}).end();
 		} finally {
 
 		}
@@ -124,6 +124,58 @@ router.post('/registrarPaciente',function(request,response){
 		response.status(500).send({ error : "error insertando usuario"}).end();
 	})	
 });
+
+//obtener diagnosticos de un usuario
+//recibe documento del usario
+router.get('/obtenerDiagnosticos', function (request, response) {
+	response = setHeaders(response);
+	console.log("query",request.query);
+	var params = [request.query.documento];
+	var sql = "select * from diagnostico where paciente = (select id from paciente where documento like $1)";
+	postgres.executeQuery(sql,params)
+	.then(res => {
+		console.log(res.rows);
+		response.status(200).send(res.rows).end();
+	})
+	.catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error leyendo diagnosticos"}).end();
+	})
+});
+
+//registrar diagnostico a un usuario
+//recibe documento del usuario
+router.post('/registrarDiagnostico', function (request, response) {
+	response = setHeaders(response);
+	console.log("registrar diagnostico");
+	//console.log("body", request.body);
+	//var diagnostico = JSON.parse(JSON.stringify(request.body));
+	console.log("query",request.query);
+	var diagnostico = JSON.parse(JSON.stringify(request.query));
+	console.log("medicion",diagnostico);
+	(async () => {		
+		try {
+			await postgres.executeQuery('BEGIN')
+			console.log("transaction begin");
+			const insertDiagnosticoValues = [diagnostico.documento,new Date(diagnostico.fecha),diagnostico.diagnostico]
+			await postgres.executeQuery('insert into diagnostico(paciente,fecha,diagnostico) values ((select id from paciente where documento like $1),$2,$3)', insertDiagnosticoValues)
+			console.log("insert diagnostico");
+			await postgres.executeQuery('COMMIT')
+			console.log("commit");
+			response.status(200).send({resultado: "diagnostico insertado exitosamente"}).end();
+		} catch (error) {
+			await client.query('ROLLBACK')
+			console.log(error);
+			response.status(500).send({ error : "error insertando diagnostico"}).end();
+		} finally {
+
+		}
+	})().catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error insertando diagnostico"}).end();
+	})	
+});
+
 
 app.use(router);
 
