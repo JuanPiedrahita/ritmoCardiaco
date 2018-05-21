@@ -143,6 +143,68 @@ router.get('/obtenerDiagnosticos', function (request, response) {
 	})
 });
 
+//obtener diagnosticos de un usuario
+//recibe documento del usario
+router.get('/obtenerDiagnosticosWeb', function (request, response) {
+	response = setHeaders(response);
+	console.log("query",request.query);
+	var params = [request.query.documento];
+	var sql = "select * from diagnostico where paciente = (select id from paciente where documento like $1)";
+	postgres.executeQuery(sql,params)
+	.then(res => {
+		var dataDiagnosticos = [];
+		console.log(res.rows);
+		for(var i = 0; i<res.rows.length;i++){
+			var diagnosticos = res.rows[i].diagnostico.split(',');
+			var diagnostico = {
+				  "resourceType": "Observation",
+				  "id": "heart-rate",
+				  "text": {
+				    "status": "generated",
+				    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative with Details</b></p><p><b>id</b>: heart-rate</p><p><b>status</b>: final</p><p><b>category</b>: Vital Signs <span>(Details : {http://hl7.org/fhir/observation-category code 'vital-signs' = 'Vital Signs', given as 'Vital Signs'})</span></p><p><b>code</b>: Heart rate <span>(Details : {LOINC code '8867-4' = 'Heart rate', given as 'Heart rate'})</span></p><p><b>subject</b>: <a>Patient/example</a></p><p><b>effective</b>: 02/07/1999</p><p><b>value</b>: 44 beats/minute<span> (Details: UCUM code /min = '/min')</span></p></div>"
+				  },
+				  "status": "final",
+				  "category": [
+				    {
+				      "coding": [
+				        {
+				          "system": "http://hl7.org/fhir/observation-category",
+				          "code": "vital-signs",
+				          "display": "Vital Signs"
+				        }
+				      ],
+				      "text": "Vital Signs"
+				    }
+				  ],
+				  "code": {
+				    "coding": [
+				      {
+				        "system": "http://loinc.org",
+				        "code": "8867-4",
+				        "display": "Heart rate"
+				      }
+				    ],
+				    "text": "Heart rate"
+				  },
+				  "subject": {
+				    "reference": "Patient/heart-rate-diagnostic"
+				  },
+				  "effectiveDateTime": res.rows[i].fecha,
+				};
+			diagnostico.primerDiagnostico = diagnosticos[0].split(":")[1];
+			diagnostico.segundoDiagnostico = diagnosticos[1].split(":")[1];
+			diagnostico.tercerDiagnostico = diagnosticos[2].split(":")[1];
+			dataDiagnosticos.push(diagnostico);
+		}
+		//response.status(200).send(res.rows).end();
+		response.status(200).send(dataDiagnosticos).end();
+	})
+	.catch(error => {
+		console.log(error);
+		response.status(500).send({ error : "error leyendo diagnosticos"}).end();
+	})
+});
+
 //registrar diagnostico a un usuario
 //recibe documento del usuario
 router.post('/registrarDiagnostico', function (request, response) {
@@ -150,8 +212,8 @@ router.post('/registrarDiagnostico', function (request, response) {
 	console.log("registrar diagnostico");
 	//console.log("body", request.body);
 	//var diagnostico = JSON.parse(JSON.stringify(request.body));
-	console.log("query",request.query);
-	var diagnostico = JSON.parse(JSON.stringify(request.query));
+	console.log("query",request.body);
+	var diagnostico = JSON.parse(JSON.stringify(request.body));
 	console.log("medicion",diagnostico);
 	(async () => {		
 		try {
@@ -164,7 +226,7 @@ router.post('/registrarDiagnostico', function (request, response) {
 			console.log("commit");
 			response.status(200).send({resultado: "diagnostico insertado exitosamente"}).end();
 		} catch (error) {
-			await client.query('ROLLBACK')
+			//await client.query('ROLLBACK')
 			console.log(error);
 			response.status(500).send({ error : "error insertando diagnostico"}).end();
 		} finally {
@@ -411,6 +473,8 @@ router.get('/hacerDiagnostico', function (request, response) {
 			}
 
 			response.status(200).send(responseAnalisis).end();
+
+
 			//response.status(200).send({resultado: "diagnostico insertado exitosamente"}).end();
 		} catch (error) {
 			console.log(error);
