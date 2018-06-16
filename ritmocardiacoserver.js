@@ -16,68 +16,68 @@ var setHeaders = function(response){
 
 var router = express.Router();
 
-//obtener mediciones de un usuario
-//recibe documento del usario
-router.get('/obtenerMediciones', function (request, response) {
+//get measurementes de un user
+//recibe document del usario
+router.get('/getMeasurements', function (request, response) {
 	response = setHeaders(response);
 	console.log("query",request.query);
-	var params = [request.query.documento];
-	var sql = "select * from medicion_ritmo_cardiaco where paciente = (select id from paciente where documento like $1)";
+	var params = [request.query.document];
+	var sql = "select * from heart_rate_measurement where patient = (select id from patient where document like $1)";
 	postgres.executeQuery(sql,params)
 	.then(res => {
 		console.log(res.rows);
 		response.status(200).send(res.rows).end();
-	})
+	})		
 	.catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error leyendo mediciones"}).end();
+		response.status(500).send({ error : "error loading measurements"}).end();
 	})
 });
 
-//agregar mediciones de un usuario
-//recibe documento del usuario
-router.post('/registrarMedicion', function (request, response) {
+//agregar measurementes de un user
+//recibe document del user
+router.post('/postMeasurement', function (request, response) {
 	response = setHeaders(response);
-	console.log("registrar medicion");
+	console.log("post measurement");
 	//console.log("body", request.body);
-	//var medicion = JSON.parse(JSON.stringify(request.body));
+	//var measurement = JSON.parse(JSON.stringify(request.body));
 	console.log("query",request.body);
-	var medicion = JSON.parse(JSON.stringify(request.body));
-	console.log("medicion",medicion);
+	var measurement = JSON.parse(JSON.stringify(request.body));
+	console.log("measurement",measurement);
 	(async () => {		
 		try {
 			await postgres.executeQuery('BEGIN')
 			console.log("transaction begin");
-			const insertMedicionValues = [medicion.documento,parseInt(medicion.valor),parseInt(medicion.tiempo),new Date(medicion.fecha)]
-			await postgres.executeQuery('insert into medicion_ritmo_cardiaco(paciente,valor,tiempo,fecha) values ((select id from paciente where documento like $1),$2,$3,$4)', insertMedicionValues)
-			console.log("insert medicion");
+			const insertmeasurementValues = [measurement.document,parseInt(measurement.value),parseInt(measurement.time),new Date(measurement.date)]
+			await postgres.executeQuery('insert into heart_rate_measurement(patient,value,time,date) values ((select id from patient where document like $1),$2,$3,$4)', insertmeasurementValues)
+			console.log("insert measurement");
 			await postgres.executeQuery('COMMIT')
 			console.log("commit");
-			response.status(200).send({resultado: "medicion insertada exitosamente"}).end();
+			response.status(200).send({result: "measurement successfully inserted"}).end();
 		} catch (error) {
-			//await client.query('ROLLBACK')
+			await postgres.executeQuery('ROLLBACK')
 			console.log(error);
-			response.status(500).send({ error : "error insertando medicion"}).end();
+			response.status(500).send({ error : "error inserting measurement"}).end();
 		} finally {
 
 		}
 	})().catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error insertando medicion"}).end();
+		response.status(500).send({ error : "error inserting measurement"}).end();
 	})	
 });
 
-//obtener pacientes
-router.get('/obtenerPacientes',function(request,response){
+//get patients
+router.get('/getPatients',function(request,response){
 	response = setHeaders(response);
 	console.log("query",request.query);
 	var params = [];
 	var sql = "";
-	if(request.query.documento != undefined){
-		sql = "select * from paciente p, contacto c where p.id=c.id and p.documento like $1";
-		params.push(request.query.documento);
+	if(request.query.document != undefined){
+		sql = "select * from patient p, contact c where p.id=c.id and p.document like $1";
+		params.push(request.query.document);
 	} else {
-		sql = "select * from paciente p, contacto c where p.id=c.id";
+		sql = "select * from patient p, contact c where p.id=c.id";
 	}
 	postgres.executeQuery(sql,params)
 	.then(res => {
@@ -86,52 +86,52 @@ router.get('/obtenerPacientes',function(request,response){
 	})
 	.catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error leyendo pacientes"}).end();
+		response.status(500).send({ error : "error reading patients"}).end();
 	})
 });
 
-//registrar un paciente nuevo
-router.post('/registrarPaciente',function(request,response){
+//post un patient nuevo
+router.post('/postPatient',function(request,response){
 	response = setHeaders(response);
-	console.log("registrar paciente");
+	console.log("post patient");
 	//console.log("body", request.body);
-	//var paciente = JSON.parse(JSON.stringify(request.body));
+	//var patient = JSON.parse(JSON.stringify(request.body));
 	console.log("query",request.query);
-	var paciente = JSON.parse(JSON.stringify(request.query));
-	console.log("paciente",paciente);
+	var patient = JSON.parse(JSON.stringify(request.query));
+	console.log("patient",patient);
 	(async () => {		
 		try {
 			await postgres.executeQuery('BEGIN')
 			console.log("transaction begin");
-			const insertPacienteValues = [paciente.documento, paciente.nombre, paciente.apellido, parseInt(paciente.edad),parseFloat( paciente.peso).toFixed(2), parseFloat(paciente.estatura).toFixed(2)]
-			const { rows } = await postgres.executeQuery('INSERT INTO paciente(documento,nombre,apellido,edad,peso,estatura) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertPacienteValues)
-			console.log("insert paciente");
-			const insertContactoVaules = [rows[0].id, paciente.correo, paciente.telefono, paciente.direccion]
-			await postgres.executeQuery('INSERT INTO contacto(paciente,correo,telefono,direccion) VALUES($1,$2,$3,$4)', insertContactoVaules)
-			console.log("insert contacto");
+			const insertpatientValues = [patient.document, patient.firstname, patient.lastname, parseInt(patient.age),parseFloat( patient.weight).toFixed(2), parseFloat(patient.height).toFixed(2)]
+			const { rows } = await postgres.executeQuery('INSERT INTO patient(document,firstname,lastname,age,weight,height) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertpatientValues)
+			console.log("insert patient");
+			const insertcontactVaules = [rows[0].id, patient.mail, patient.phone, patient.address]
+			await postgres.executeQuery('INSERT INTO contact(patient,mail,phone,address) VALUES($1,$2,$3,$4)', insertcontactVaules)
+			console.log("insert contact");
 			await postgres.executeQuery('COMMIT')
 			console.log("commit");
-			response.status(200).send({resultado: "usuario insertado con exito"}).end();
+			response.status(200).send({result: "user successfully inserted"}).end();
 		} catch (error) {
-			await client.query('ROLLBACK')
+			await postgres.executeQuery('ROLLBACK')
 			console.log(error);
-			response.status(500).send({ error : "error insertando usuario"}).end();
+			response.status(500).send({ error : "error inserting user"}).end();
 		} finally {
 
 		}
 	})().catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error insertando usuario"}).end();
+		response.status(500).send({ error : "error inserting user"}).end();
 	})	
 });
 
-//obtener diagnosticos de un usuario
-//recibe documento del usario
-router.get('/obtenerDiagnosticos', function (request, response) {
+//get diagnosiss de un user
+//recibe document del usario
+router.get('/getDiagnosis', function (request, response) {
 	response = setHeaders(response);
 	console.log("query",request.query);
-	var params = [request.query.documento];
-	var sql = "select * from diagnostico where paciente = (select id from paciente where documento like $1)";
+	var params = [request.query.document];
+	var sql = "select * from diagnosis where patient = (select id from patient where document like $1)";
 	postgres.executeQuery(sql,params)
 	.then(res => {
 		console.log(res.rows);
@@ -139,326 +139,264 @@ router.get('/obtenerDiagnosticos', function (request, response) {
 	})
 	.catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error leyendo diagnosticos"}).end();
+		response.status(500).send({ error : "error reading diagnosis"}).end();
 	})
 });
 
-//obtener diagnosticos de un usuario
-//recibe documento del usario
-router.get('/obtenerDiagnosticosWeb', function (request, response) {
+//post diagnosis a un user
+//recibe document del user
+router.post('/postDiagnosis', function (request, response) {
 	response = setHeaders(response);
-	console.log("query",request.query);
-	var params = [request.query.documento];
-	var sql = "select * from diagnostico where paciente = (select id from paciente where documento like $1)";
-	postgres.executeQuery(sql,params)
-	.then(res => {
-		var dataDiagnosticos = [];
-		console.log(res.rows);
-		for(var i = 0; i<res.rows.length;i++){
-			var diagnosticos = res.rows[i].diagnostico.split(',');
-			var diagnostico = {
-				  "resourceType": "Observation",
-				  "id": "heart-rate",
-				  "text": {
-				    "status": "generated",
-				    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative with Details</b></p><p><b>id</b>: heart-rate</p><p><b>status</b>: final</p><p><b>category</b>: Vital Signs <span>(Details : {http://hl7.org/fhir/observation-category code 'vital-signs' = 'Vital Signs', given as 'Vital Signs'})</span></p><p><b>code</b>: Heart rate <span>(Details : {LOINC code '8867-4' = 'Heart rate', given as 'Heart rate'})</span></p><p><b>subject</b>: <a>Patient/example</a></p><p><b>effective</b>: 02/07/1999</p><p><b>value</b>: 44 beats/minute<span> (Details: UCUM code /min = '/min')</span></p></div>"
-				  },
-				  "status": "final",
-				  "category": [
-				    {
-				      "coding": [
-				        {
-				          "system": "http://hl7.org/fhir/observation-category",
-				          "code": "vital-signs",
-				          "display": "Vital Signs"
-				        }
-				      ],
-				      "text": "Vital Signs"
-				    }
-				  ],
-				  "code": {
-				    "coding": [
-				      {
-				        "system": "http://loinc.org",
-				        "code": "8867-4",
-				        "display": "Heart rate"
-				      }
-				    ],
-				    "text": "Heart rate"
-				  },
-				  "subject": {
-				    "reference": "Patient/heart-rate-diagnostic"
-				  },
-				  "effectiveDateTime": res.rows[i].fecha,
-				};
-			diagnostico.primerDiagnostico = diagnosticos[0].split(":")[1];
-			diagnostico.segundoDiagnostico = diagnosticos[1].split(":")[1];
-			diagnostico.tercerDiagnostico = diagnosticos[2].split(":")[1];
-			dataDiagnosticos.push(diagnostico);
-		}
-		//response.status(200).send(res.rows).end();
-		response.status(200).send(dataDiagnosticos).end();
-	})
-	.catch(error => {
-		console.log(error);
-		response.status(500).send({ error : "error leyendo diagnosticos"}).end();
-	})
-});
-
-//registrar diagnostico a un usuario
-//recibe documento del usuario
-router.post('/registrarDiagnostico', function (request, response) {
-	response = setHeaders(response);
-	console.log("registrar diagnostico");
+	console.log("post diagnosis");
 	//console.log("body", request.body);
-	//var diagnostico = JSON.parse(JSON.stringify(request.body));
+	//var diagnosis = JSON.parse(JSON.stringify(request.body));
 	console.log("query",request.body);
-	var diagnostico = JSON.parse(JSON.stringify(request.body));
-	console.log("medicion",diagnostico);
+	var diagnosis = JSON.parse(JSON.stringify(request.body));
+	console.log("diagnosis",diagnosis);
 	(async () => {		
 		try {
 			await postgres.executeQuery('BEGIN')
 			console.log("transaction begin");
-			const insertDiagnosticoValues = [diagnostico.documento,new Date(diagnostico.fecha),diagnostico.diagnostico]
-			await postgres.executeQuery('insert into diagnostico(paciente,fecha,diagnostico) values ((select id from paciente where documento like $1),$2,$3)', insertDiagnosticoValues)
-			console.log("insert diagnostico");
+			const insertDiagnosisValues = [diagnosis.document,new Date(diagnosis.date),diagnosis.diagnosis]
+			await postgres.executeQuery('insert into diagnosis(patient,date,diagnosis) values ((select id from patient where document like $1),$2,$3)', insertDiagnosisValues)
+			console.log("insert diagnosis");
 			await postgres.executeQuery('COMMIT')
 			console.log("commit");
-			response.status(200).send({resultado: "diagnostico insertado exitosamente"}).end();
+			response.status(200).send({result: "diagnosis successfully inserted"}).end();
 		} catch (error) {
-			//await client.query('ROLLBACK')
+			await postgres.executeQuery('ROLLBACK')
 			console.log(error);
-			response.status(500).send({ error : "error insertando diagnostico"}).end();
+			response.status(500).send({ error : "error inserting diagnosis"}).end();
 		} finally {
 
 		}
 	})().catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error insertando diagnostico"}).end();
+		response.status(500).send({ error : "error inserting diagnosis"}).end();
 	})	
 });
 
 
-//registrar diagnostico a un usuario
-//recibe documento del usuario
-router.get('/hacerDiagnostico', function (request, response) {
+//post diagnosis a un user
+//recibe document del user
+router.get('/makeDiagnosis', function (request, response) {
 	response = setHeaders(response);
-	console.log("hacer diagnostico");
+	console.log("make diagnosis");
 	//console.log("body", request.body);
-	//var diagnostico = JSON.parse(JSON.stringify(request.body));
+	//var diagnosis = JSON.parse(JSON.stringify(request.body));
 	console.log("query",request.body);
-	var documento = JSON.parse(JSON.stringify(request.body));
-	console.log("documento",documento);
+	var document = JSON.parse(JSON.stringify(request.body));
+	console.log("document",document);
 	(async () => {		
 		try {
-			console.log("Consultando datos");
-			var {rows} = await postgres.executeQuery('select min(valor) from datos',[]);
+			console.log("Getting data");
+			var {rows} = await postgres.executeQuery('select min(value) from datos',[]);
 			const min = rows[0].min;
-			console.log("menor",min);
-			var {rows} = await postgres.executeQuery('select max(valor) from datos',[]);
+			console.log("min",min);
+			var {rows} = await postgres.executeQuery('select max(value) from datos',[]);
 			const max = rows[0].max;
-			console.log("mayor",max);
+			console.log("max",max);
 			var {rows} = await postgres.executeQuery('select count(*) from datos',[]);
 			const total = rows[0].count;
 			console.log("total",total);
-			var rangoInicial = 0;
-			var rangoFinal = 0;
+			var initialRange = 0;
+			var finalRange = 0;
 			if (min % 5 < 3){
-				rangoInicial = min - (min % 5);
+				initialRange = min - (min % 5);
 			} else {
-				rangoInicial = min - (min % 5) + 5;
+				initialRange = min - (min % 5) + 5;
 			}
 			if (max % 5 < 3){
-				rangoFinal = max - (max % 5);
+				finalRange = max - (max % 5);
 			} else {
-				rangoFinal = max - (max % 5) + 5;
+				finalRange = max - (max % 5) + 5;
 			}
-			console.log("rangoInicial", rangoInicial);
-			console.log("rangoFinal",rangoFinal)
-			var cantidadRango5 = [];
-			for(var i = rangoInicial; i <= rangoFinal ; i=i+5){
-				console.log("consultando de "+(i-2)+" a "+(i+2));
-				var {rows} = await postgres.executeQuery('select count(*) from datos where valor between $1 and $2',[(i-2),(i+2)]);
-				cantidadRango5.push({
-					"rango": i,
-					"cantidad": rows[0].count,
-					"probabilidad": parseFloat(rows[0].count/total)
+			console.log("initialRange", initialRange);
+			console.log("finalRange",finalRange)
+			var range5 = [];
+			for(var i = initialRange; i <= finalRange ; i=i+5){
+				console.log("consulting from "+(i-2)+" a "+(i+2));
+				var {rows} = await postgres.executeQuery('select count(*) from datos where value between $1 and $2',[(i-2),(i+2)]);
+				range5.push({
+					"range": i,
+					"quantity": rows[0].count,
+					"probability": parseFloat(rows[0].count/total)
 				});
 			}
-			console.log("cantidadRango5", cantidadRango5);
+			console.log("range5", range5);
 
 			//pulsaciones
 			/*console.log("Consultando pulsacions");
-			const minPulsaciones = min*60;
-			console.log("menor",minPulsaciones);
-			const maxPulsaciones = max*60;
-			console.log("mayor",maxPulsaciones);
+			const minHeartRatees = min*60;
+			console.log("min",minHeartRatees);
+			const maxHeartRatees = max*60;
+			console.log("max",maxHeartRatees);
 			console.log("total",total);
-			var rangoInicialPulsaciones = 0;
-			var rangoFinalPulsaciones = 0;
-			if (minPulsaciones % 250 < 126){
-				rangoInicialPulsaciones = minPulsaciones - (minPulsaciones % 250);
+			var initialRangePulsaciones = 0;
+			var finalRangePulsaciones = 0;
+			if (minHeartRatees % 250 < 126){
+				initialRangePulsaciones = minHeartRatees - (minHeartRatees % 250);
 			} else {
-				rangoInicialPulsaciones = minPulsaciones - (minPulsaciones % 250) + 250;
+				initialRangePulsaciones = minHeartRatees - (minHeartRatees % 250) + 250;
 			}
-			if (maxPulsaciones % 250 < 126){
-				rangoFinalPulsaciones = maxPulsaciones - (maxPulsaciones % 250);
+			if (maxHeartRatees % 250 < 126){
+				finalRangePulsaciones = maxHeartRatees - (maxHeartRatees % 250);
 			} else {
-				rangoFinalPulsaciones = maxPulsaciones - (maxPulsaciones % 250) + 250;
+				finalRangePulsaciones = maxHeartRatees - (maxHeartRatees % 250) + 250;
 			}
-			console.log("rangoInicialPulsaciones", rangoInicialPulsaciones);
-			console.log("rangoFinalPulsaciones",rangoFinalPulsaciones)
-			var cantidadPulsaciones = [];
-			for(var i = rangoInicialPulsaciones; i <= rangoFinalPulsaciones ; i=i+250){
+			console.log("initialRangePulsaciones", initialRangePulsaciones);
+			console.log("finalRangePulsaciones",finalRangePulsaciones)
+			var quantityPulsaciones = [];
+			for(var i = initialRangePulsaciones; i <= finalRangePulsaciones ; i=i+250){
 				console.log("consultando pulsaciones de "+(i-124)+" a "+(i+125));
-				var {rows} = await postgres.executeQuery('select count(*) from datos where valor*60 between $1 and $2',[(i-124),(i+125)]);
-				cantidadPulsaciones.push({
+				var {rows} = await postgres.executeQuery('select count(*) from datos where value*60 between $1 and $2',[(i-124),(i+125)]);
+				quantityPulsaciones.push({
 					"rango": i,
-					"cantidad": rows[0].count,
+					"quantity": rows[0].count,
 					"probabilidad": parseFloat(rows[0].count/total)
 				});
 			}
-			console.log("cantidadPulsaciones", cantidadPulsaciones);
+			console.log("quantityPulsaciones", quantityPulsaciones);
 
-			response.status(200).send(cantidadPulsaciones).end();
+			response.status(200).send(quantityPulsaciones).end();
 			*/
 			var dia = 4;
-			var hora = 17;
-			var minPulsacion = 10000000;
-			var maxPulsacion = 0;
+			var hour = 17;
+			var minHeartRate = 10000000;
+			var maxHeartRate = 0;
 			var pulsaciones=[];
-			while(dia != 5 || hora != 18){
-				var fechaInicial = new Date('2018-06-'+dia+' '+hora+':00:00');
-				var fechaFinal = new Date('2018-06-'+dia+' '+hora+':59:59');
-				console.log("consultado pulsaciones de "+fechaInicial.toString()+" a "+fechaFinal.toString());
-				var {rows} = await postgres.executeQuery('select avg(valor)*60 as promedio_hora from datos where fecha between $1 and $2',[fechaInicial,fechaFinal]);
+			while(dia != 5 || hour != 18){
+				var initialDate = new Date('2018-06-'+dia+' '+hour+':00:00');
+				var finalDate = new Date('2018-06-'+dia+' '+hour+':59:59');
+				console.log("consultado pulsaciones de "+initialDate.toString()+" a "+finalDate.toString());
+				var {rows} = await postgres.executeQuery('select avg(value)*60 as promedio_hour from datos where date between $1 and $2',[initialDate,finalDate]);
 				console.log(rows);
-				if(rows[0].promedio_hora != null){
-					minPulsacion = (rows[0].promedio_hora<minPulsacion)?rows[0].promedio_hora:minPulsacion;
-					maxPulsacion = (rows[0].promedio_hora>maxPulsacion)?rows[0].promedio_hora:maxPulsacion;
+				if(rows[0].promedio_hour != null){
+					minHeartRate = (rows[0].promedio_hour<minHeartRate)?rows[0].promedio_hour:minHeartRate;
+					maxHeartRate = (rows[0].promedio_hour>maxHeartRate)?rows[0].promedio_hour:maxHeartRate;
 					pulsaciones.push({
-					hora: fechaInicial,
-					cantidad: parseFloat(rows[0].promedio_hora)
+					hour: initialDate,
+					quantity: parseFloat(rows[0].promedio_hour)
 				})
 				}
-				if(hora+1 == 24){
-					hora = 0;
+				if(hour+1 == 24){
+					hour = 0;
 					dia= dia + 1;
 				}else{
-					hora = hora + 1;
+					hour = hour + 1;
 				}
-				console.log("dia ",dia, " hora ", hora);
+				console.log("dia ",dia, " hour ", hour);
 			}
 			console.log(pulsaciones);
-			console.log("maxPulsacion", maxPulsacion);
-			console.log("minPulsacion",minPulsacion);
-			var rangoInicialPulsacion = 0;
-			var rangoFinalPulsacion = 0;
-			if (minPulsacion % 250 < 126){
-				rangoInicialPulsacion = minPulsacion - (minPulsacion % 250);
+			console.log("maxHeartRate", maxHeartRate);
+			console.log("minHeartRate",minHeartRate);
+			var initialRangePulsacion = 0;
+			var finalRangePulsacion = 0;
+			if (minHeartRate % 250 < 126){
+				initialRangePulsacion = minHeartRate - (minHeartRate % 250);
 			} else {
-				rangoInicialPulsacion = minPulsacion - (minPulsacion % 250) + 250;
+				initialRangePulsacion = minHeartRate - (minHeartRate % 250) + 250;
 			}
-			if (maxPulsacion % 250 < 126){
-				rangoFinalPulsacion = maxPulsacion - (maxPulsacion % 250);
+			if (maxHeartRate % 250 < 126){
+				finalRangePulsacion = maxHeartRate - (maxHeartRate % 250);
 			} else {
-				rangoFinalPulsacion = maxPulsacion - (maxPulsacion % 250) + 250;
+				finalRangePulsacion = maxHeartRate - (maxHeartRate % 250) + 250;
 			}
-			console.log("rangoInicialPulsacion", rangoInicialPulsacion);
-			console.log("rangoFinalPulsacion",rangoFinalPulsacion)
-			var cantidadPulsaciones = [];
-			for(var i = rangoInicialPulsacion; i <= rangoFinalPulsacion ; i=i+250){
+			console.log("initialRangePulsacion", initialRangePulsacion);
+			console.log("finalRangePulsacion",finalRangePulsacion)
+			var quantityPulsaciones = [];
+			for(var i = initialRangePulsacion; i <= finalRangePulsacion ; i=i+250){
 				console.log("consultando pulsaciones de "+(i-124)+" a "+(i+125));
 				var num = 0;
 				for(var j=0;j<pulsaciones.length;j++){
-					if(i-124<=pulsaciones[j].cantidad && pulsaciones[j].cantidad<i+125 ){
-						console.log(pulsaciones[j].cantidad);
+					if(i-124<=pulsaciones[j].quantity && pulsaciones[j].quantity<i+125 ){
+						console.log(pulsaciones[j].quantity);
 						num += 1;
 					}
 				}
-				cantidadPulsaciones.push({
+				quantityPulsaciones.push({
 					"rango": i,
-					"cantidad": num,
+					"quantity": num,
 					"probabilidad": parseFloat(num/pulsaciones.length)
 				});
 			}
 
 			var string1Punto = "";
 			var string2Punto = "";
-			var string3Punto = "No concluyente";
+			var string3Punto = "Inconclusive";
 
 			//Primera validacion
-			if(cantidadRango5.length >17){
-				string1Punto = "Caracteristico de normalidad"
-			} else if(cantidadRango5.length < 14){
-				string1Punto = "Caracteristico de Enfermedad"
+			if(range5.length >17){
+				string1Punto = "Characteristic of normality"
+			} else if(range5.length < 14){
+				string1Punto = "Characteristic of disease"
 			} else {
-				string1Punto = "no concluyente"
+				string1Punto = "Inconclusive"
 			}
 
-			console.log("cantidadRango5", cantidadRango5);
-			console.log("cantidadPulsaciones",cantidadPulsaciones);
+			console.log("range5", range5);
+			console.log("quantityPulsaciones",quantityPulsaciones);
 
 			//Segunda validacion
 			var compataratorProbabilidad = function(a,b){
 				return b.probabilidad - a.probabilidad; 
 			}
-			cantidadRango5.sort(compataratorProbabilidad);
-			cantidadPulsaciones.sort(compataratorProbabilidad);
+			range5.sort(compataratorProbabilidad);
+			quantityPulsaciones.sort(compataratorProbabilidad);
 
-			var cantidadRango5Mayor1 = cantidadRango5[0].rango;
-			var cantidadRango5Mayor2 = cantidadRango5[1].rango;
-			console.log("Cantidad rango 5 Mayor 1", cantidadRango5Mayor1)
-			console.log("Cantidad rango 5 Mayor 2", cantidadRango5Mayor2)
+			var range5max1 = range5[0].rango;
+			var range5max2 = range5[1].rango;
+			console.log("quantity rango 5 max 1", range5max1)
+			console.log("quantity rango 5 max 2", range5max2)
 
 			var criterioa = false;
 			var criteriob = false;
-			if(cantidadRango5Mayor1-cantidadRango5Mayor2>=15){
+			if(range5max1-range5max2>=15){
 				var criterioa = true;
 			}
 
-			if(cantidadPulsaciones[0].probabilidad<0.217 || cantidadPulsaciones[0].probabilidad>0.304){
+			if(quantityPulsaciones[0].probabilidad<0.217 || quantityPulsaciones[0].probabilidad>0.304){
 				var criteriob = true;
 			}
 
 			var numeroLatidosEnRango = false;
 			for (var i = 0; i<pulsaciones.length; i++){
-				if(3000>pulsaciones[i].cantidad && pulsaciones[i].cantidad>6250){
+				if(3000>pulsaciones[i].quantity && pulsaciones[i].quantity>6250){
 					numeroLatidosEnRango = true;
 				}
 			}
 
 			if(criterioa || (criterioa && criteriob)){
-				string2Punto = "Enfermedad criterio 1";
+				string2Punto = "Characteristic of disease by first test";
 			} 
 			if(!criterioa && criteriob && numeroLatidosEnRango){
-				string2Punto += "Enfermedad criterio 2"
+				string2Punto += "Characteristic of disease by second test"
 			}
 			if(!criterioa && criteriob){
-				string2Punto += "Enfermedad en evolución criterio 3"
+				string2Punto += "Characteristic of disease in evolution by third test"
 			} 
 			if(!criterioa && !criteriob){
-				string2Punto = "Sano"
+				string2Punto = "Healthy"
 			}
 
 			//tercera validacion
 			var holtersEnfermos = false;
-			var sumaMayoresProbabilidades = cantidadRango5Mayor1 + cantidadRango5Mayor2;
-			if(sumaMayoresProbabilidades > 0.319){
+			var sumamaxesProbabilidades = range5max1 + range5max2;
+			if(sumamaxesProbabilidades > 0.319){
 				holtersEnfermos = true;
 			}
 
 			if(criterioa && criteriob && holtersEnfermos){
-				string3Punto = "Enfermedad por primer criterio"
+				string3Punto = "Characteristic of disease by first test"
 			}
 			if(criteriob && holtersEnfermos){
-				string3Punto = "Enfermedad por Segundo criterio"
+				string3Punto = "Characteristic of disease by second test"
 			}
 			if(criteriob && holtersEnfermos && numeroLatidosEnRango){
-				string3Punto = "Enfermedad por tercer criterio"
+				string3Punto = "Characteristic of disease by third test"
 			}
 			if(holtersEnfermos && !criterioa && !criteriob){
-				string3Punto = "Sano"
+				string3Punto = "Healthy"
 			}
 
 			console.log("1 conclusión",string1Punto);
@@ -466,25 +404,25 @@ router.get('/hacerDiagnostico', function (request, response) {
 			console.log("3 conclusión",string3Punto);
 
 			var responseAnalisis = {
-				"Primer analisis":string1Punto,
-				"Segundo analisis":string2Punto,
-				"Tercer analisis":string3Punto,
-				"Diagnostico":(string1Punto.includes("Enfermedad") || string2Punto.includes("Enfermedad") || string3Punto.includes("Enfermedad"))?"Consulte a su medico":"Paciente sano",
+				"First analysis":string1Punto,
+				"Second analysis":string2Punto,
+				"Third analysis":string3Punto,
+				"Diagnosis":(string1Punto.includes("disease") || string2Punto.includes("disease") || string3Punto.includes("Disease"))?"Not healthy, please consult your doctor":"Healthy",
 			}
 
 			response.status(200).send(responseAnalisis).end();
 
 
-			//response.status(200).send({resultado: "diagnostico insertado exitosamente"}).end();
+			//response.status(200).send({result: "diagnosis successfully inserted"}).end();
 		} catch (error) {
 			console.log(error);
-			response.status(500).send({ error : "error haciendo diagnostico"}).end();
+			response.status(500).send({ error : "error making diagnosis"}).end();
 		} finally {
 
 		}
 	})().catch(error => {
 		console.log(error);
-		response.status(500).send({ error : "error haciendo diagnostico"}).end();
+		response.status(500).send({ error : "error making diagnosis"}).end();
 	})	
 });
 

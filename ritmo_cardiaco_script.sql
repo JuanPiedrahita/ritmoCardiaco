@@ -13,85 +13,85 @@
 -- -- ddl-end --
 -- 
 
--- object: public.paciente | type: TABLE --
--- DROP TABLE IF EXISTS public.paciente CASCADE;
-CREATE TABLE public.paciente(
+-- object: public.patient | type: TABLE --
+-- DROP TABLE IF EXISTS public.patient CASCADE;
+CREATE TABLE public.patient(
 	id serial NOT NULL,
-	documento varchar(11) NOT NULL,
-	nombre varchar(50) NOT NULL,
-	apellido varchar(50) NOT NULL,
-	edad integer NOT NULL,
-	peso numeric(5,2) NOT NULL,
-	estatura numeric(5,2) NOT NULL,
-	CONSTRAINT pk_paciente PRIMARY KEY (id)
+	document varchar(11) NOT NULL,
+	firstname varchar(50) NOT NULL,
+	lastname varchar(50) NOT NULL,
+	age integer NOT NULL,
+	weight numeric(5,2) NOT NULL,
+	height numeric(5,2) NOT NULL,
+	CONSTRAINT pk_patient PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.paciente OWNER TO postgres;
+ALTER TABLE public.patient OWNER TO postgres;
 -- ddl-end --
 
--- object: public.contacto | type: TABLE --
--- DROP TABLE IF EXISTS public.contacto CASCADE;
-CREATE TABLE public.contacto(
+-- object: public.contact | type: TABLE --
+-- DROP TABLE IF EXISTS public.contact CASCADE;
+CREATE TABLE public.contact(
 	id serial NOT NULL,
-	paciente integer NOT NULL,
-	correo varchar(50) NOT NULL,
-	telefono varchar(10),
-	direccion varchar(50),
-	CONSTRAINT pk_contacto PRIMARY KEY (id)
+	patient integer NOT NULL,
+	mail varchar(50) NOT NULL,
+	phone varchar(10),
+	address varchar(50),
+	CONSTRAINT pk_contact PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.contacto OWNER TO postgres;
+ALTER TABLE public.contact OWNER TO postgres;
 -- ddl-end --
 
--- object: public.medicion_ritmo_cardiaco | type: TABLE --
--- DROP TABLE IF EXISTS public.medicion_ritmo_cardiaco CASCADE;
-CREATE TABLE public.medicion_ritmo_cardiaco(
+-- object: public.heart_rate_measurement | type: TABLE --
+-- DROP TABLE IF EXISTS public.heart_rate_measurement CASCADE;
+CREATE TABLE public.heart_rate_measurement(
 	id serial NOT NULL,
-	paciente integer,
-	valor integer NOT NULL,
-	tiempo integer NOT NULL,
-	fecha timestamp NOT NULL,
-	CONSTRAINT pk_medicion_ritmo_cardiaco PRIMARY KEY (id)
+	patient integer,
+	value integer NOT NULL,
+	time integer NOT NULL,
+	date timestamp NOT NULL,
+	CONSTRAINT pk_heart_rate_measurement PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.medicion_ritmo_cardiaco OWNER TO postgres;
+ALTER TABLE public.heart_rate_measurement OWNER TO postgres;
 -- ddl-end --
 
--- object: public.diagnostico | type: TABLE --
--- DROP TABLE IF EXISTS public.diagnostico CASCADE;
-CREATE TABLE public.diagnostico(
+-- object: public.diagnosis | type: TABLE --
+-- DROP TABLE IF EXISTS public.diagnosis CASCADE;
+CREATE TABLE public.diagnosis(
 	id serial NOT NULL,
-	paciente integer,
-	fecha timestamp NOT NULL,
-	diagnostico text NOT NULL,
-	CONSTRAINT pk_diagnostico PRIMARY KEY (id)
+	patient integer,
+	date timestamp NOT NULL,
+	diagnosis text NOT NULL,
+	CONSTRAINT pk_diagnosis PRIMARY KEY (id)
 
 );
 -- ddl-end --
-ALTER TABLE public.diagnostico OWNER TO postgres;
+ALTER TABLE public.diagnosis OWNER TO postgres;
 -- ddl-end --
 
--- object: paciente_fk | type: CONSTRAINT --
--- ALTER TABLE public.contacto DROP CONSTRAINT IF EXISTS paciente_fk CASCADE;
-ALTER TABLE public.contacto ADD CONSTRAINT paciente_fk FOREIGN KEY (paciente)
-REFERENCES public.paciente (id) MATCH FULL
+-- object: patient_fk | type: CONSTRAINT --
+-- ALTER TABLE public.contact DROP CONSTRAINT IF EXISTS patient_fk CASCADE;
+ALTER TABLE public.contact ADD CONSTRAINT patient_fk FOREIGN KEY (patient)
+REFERENCES public.patient (id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: paciente_fk | type: CONSTRAINT --
--- ALTER TABLE public.medicion_ritmo_cardiaco DROP CONSTRAINT IF EXISTS paciente_fk CASCADE;
-ALTER TABLE public.medicion_ritmo_cardiaco ADD CONSTRAINT paciente_fk FOREIGN KEY (paciente)
-REFERENCES public.paciente (id) MATCH FULL
+-- object: patient_fk | type: CONSTRAINT --
+-- ALTER TABLE public.heart_rate_measurement DROP CONSTRAINT IF EXISTS patient_fk CASCADE;
+ALTER TABLE public.heart_rate_measurement ADD CONSTRAINT patient_fk FOREIGN KEY (patient)
+REFERENCES public.patient (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
--- object: paciente_fk | type: CONSTRAINT --
--- ALTER TABLE public.diagnostico DROP CONSTRAINT IF EXISTS paciente_fk CASCADE;
-ALTER TABLE public.diagnostico ADD CONSTRAINT paciente_fk FOREIGN KEY (paciente)
-REFERENCES public.paciente (id) MATCH FULL
+-- object: patient_fk | type: CONSTRAINT --
+-- ALTER TABLE public.diagnosis DROP CONSTRAINT IF EXISTS patient_fk CASCADE;
+ALTER TABLE public.diagnosis ADD CONSTRAINT patient_fk FOREIGN KEY (patient)
+REFERENCES public.patient (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 

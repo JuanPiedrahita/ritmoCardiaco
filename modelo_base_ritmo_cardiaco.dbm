@@ -11,14 +11,14 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <schema name="public" fill-color="#e1e1e1" sql-disabled="true">
 </schema>
 
-<table name="paciente">
+<table name="patient">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="260" y="160"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
-	<column name="documento" not-null="true">
+	<column name="document" not-null="true">
 		<type name="varchar" length="11"/>
 	</column>
 	<column name="nombre" not-null="true">
@@ -36,12 +36,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="estatura" not-null="true">
 		<type name="numeric" length="5" precision="2"/>
 	</column>
-	<constraint name="pk_paciente" type="pk-constr" table="public.paciente">
+	<constraint name="pk_patient" type="pk-constr" table="public.patient">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 </table>
 
-<table name="contacto">
+<table name="contact">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="740" y="180"/>
@@ -57,49 +57,49 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="direccion">
 		<type name="varchar" length="50"/>
 	</column>
-	<constraint name="pk_contacto" type="pk-constr" table="public.contacto">
+	<constraint name="pk_contact" type="pk-constr" table="public.contact">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="paciente" index="1"/>
+		<object name="patient" index="1"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="paciente_fk" index="1"/>
+		<object name="patient_fk" index="1"/>
 	</customidxs>
 </table>
 
-<table name="medicion_ritmo_cardiaco">
+<table name="heart_rate_measurement">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="240" y="400"/>
 	<column name="id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
-	<column name="valor" not-null="true">
+	<column name="value" not-null="true">
 		<type name="integer" length="0"/>
 	</column>
-	<column name="tiempo" not-null="true">
+	<column name="time" not-null="true">
 		<type name="integer" length="0"/>
 	</column>
 	<column name="fecha" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
-	<constraint name="pk_medicion_ritmo_cardiaco" type="pk-constr" table="public.medicion_ritmo_cardiaco">
+	<constraint name="pk_heart_rate_measurement" type="pk-constr" table="public.heart_rate_measurement">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="paciente" index="1"/>
+		<object name="patient" index="1"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="paciente_fk" index="1"/>
+		<object name="patient_fk" index="1"/>
 	</customidxs>
 </table>
 
-<table name="diagnostico">
+<table name="diagnosis">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="700" y="420"/>
@@ -109,47 +109,47 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="fecha" not-null="true">
 		<type name="timestamp" length="0"/>
 	</column>
-	<column name="diagnostico" not-null="true">
+	<column name="diagnosis" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="pk_diagnostico" type="pk-constr" table="public.diagnostico">
+	<constraint name="pk_diagnosis" type="pk-constr" table="public.diagnosis">
 		<columns names="id" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="paciente" index="1"/>
+		<object name="patient" index="1"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
-		<object name="paciente_fk" index="1"/>
+		<object name="patient_fk" index="1"/>
 	</customidxs>
 </table>
 
-<relationship name="paciente_has_many_contacto" type="rel1n"
+<relationship name="patient_has_many_contact" type="rel1n"
 	 src-col-pattern="{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#9c3b78"
-	 src-table="public.paciente"
-	 dst-table="public.contacto"
+	 src-table="public.patient"
+	 dst-table="public.contact"
 	 src-required="true" dst-required="false"/>
 
-<relationship name="paciente_has_many_medicion_ritmo_cardiaco" type="rel1n"
+<relationship name="patient_has_many_heart_rate_measurement" type="rel1n"
 	 src-col-pattern="{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#adf50a"
-	 src-table="public.paciente"
-	 dst-table="public.medicion_ritmo_cardiaco"
+	 src-table="public.patient"
+	 dst-table="public.heart_rate_measurement"
 	 src-required="false" dst-required="false"/>
 
-<relationship name="paciente_has_many_diagnostico" type="rel1n"
+<relationship name="patient_has_many_diagnosis" type="rel1n"
 	 src-col-pattern="{st}"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
 	 custom-color="#f2637e"
-	 src-table="public.paciente"
-	 dst-table="public.diagnostico"
+	 src-table="public.patient"
+	 dst-table="public.diagnosis"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>
