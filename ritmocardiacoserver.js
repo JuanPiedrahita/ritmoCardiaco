@@ -184,19 +184,45 @@ router.get('/makeDiagnosis', function (request, response) {
 	console.log("make diagnosis");
 	//console.log("body", request.body);
 	//var diagnosis = JSON.parse(JSON.stringify(request.body));
-	console.log("query",request.body);
-	var document = JSON.parse(JSON.stringify(request.body));
+	//console.log("query",request.body);
+	//var document = JSON.parse(JSON.stringify(request.body));
+	console.log("query",request.query);
+	var document = request.query.document;
 	console.log("document",document);
 	(async () => {		
 		try {
+			console.log("Creating temporary table datos_diagnostico_usuario_"+document+" with user data");
+			await postgres.executeQuery("DROP TABLE IF EXISTS datos_diagnostico_usuario_"+document,[]);
+			const userTableParameters = [document,document];
+			const queryTempTable = "CREATE TEMPORARY TABLE datos_diagnostico_usuario_"+ document + " "+
+				"AS (" +
+				"SELECT "  +
+					"id," +
+					"patient," +
+					"value," +
+					"date," +
+					"time " +
+				"FROM " +
+					"heart_rate_measurement " +
+				"WHERE " +
+					"patient = (SELECT id FROM patient WHERE document = $1) " +
+					"AND " +
+					"date >= (SELECT (MAX(DATE) - interval '21 hour') FROM heart_rate_measurement WHERE patient = (SELECT id FROM patient WHERE document = $2))" +	
+				")";
+			console.log(queryTempTable);
+			await postgres.executeQuery(queryTempTable,userTableParameters)
+			console.log("Temporary table created");
 			console.log("Getting data");
-			var {rows} = await postgres.executeQuery('select min(value) from datos',[]);
+			//var {rows} = await postgres.executeQuery('select min(value) from datos',[]);
+			var {rows} = await postgres.executeQuery('select min(value) from datos_diagnostico_usuario_'+ document,[]);
 			const min = rows[0].min;
 			console.log("min",min);
-			var {rows} = await postgres.executeQuery('select max(value) from datos',[]);
+			//var {rows} = await postgres.executeQuery('select max(value) from datos',[]);
+			var {rows} = await postgres.executeQuery('select max(value) from datos_diagnostico_usuario_'+ document,[]);
 			const max = rows[0].max;
 			console.log("max",max);
-			var {rows} = await postgres.executeQuery('select count(*) from datos',[]);
+			//var {rows} = await postgres.executeQuery('select count(*) from datos',[]);
+			var {rows} = await postgres.executeQuery('select count(*) from datos_diagnostico_usuario_'+ document,[]);
 			const total = rows[0].count;
 			console.log("total",total);
 			var initialRange = 0;
@@ -216,7 +242,8 @@ router.get('/makeDiagnosis', function (request, response) {
 			var range5 = [];
 			for(var i = initialRange; i <= finalRange ; i=i+5){
 				console.log("consulting from "+(i-2)+" a "+(i+2));
-				var {rows} = await postgres.executeQuery('select count(*) from datos where value between $1 and $2',[(i-2),(i+2)]);
+				//var {rows} = await postgres.executeQuery('select count(*) from datos where value between $1 and $2',[(i-2),(i+2)]);
+				var {rows} = await postgres.executeQuery('select count(*) from datos_diagnostico_usuario_'+document+' where value between $1 and $2',[(i-2),(i+2)]);
 				range5.push({
 					"range": i,
 					"quantity": rows[0].count,
@@ -260,32 +287,47 @@ router.get('/makeDiagnosis', function (request, response) {
 
 			response.status(200).send(quantityPulsaciones).end();
 			*/
-			var dia = 4;
-			var hour = 17;
+			//var dia = 4;
+			//var hour = 17;
+			//se fijan valores para las horas...
+			var {rows} = await postgres.executeQuery('select min(date) as date from datos_diagnostico_usuario_'+document);
+			var minDate = rows[0].date;
+			var {rows} = await postgres.executeQuery('select max(date) as date from datos_diagnostico_usuario_'+document);
+			var maxDate = rows[0].date;
+			var temporalDate = new Date(minDate);
+			console.log("Initial Date: ", minDate.toString());
+			console.log("Final Date: ", maxDate.toString());
+			console
 			var minHeartRate = 10000000;
 			var maxHeartRate = 0;
 			var pulsaciones=[];
-			while(dia != 5 || hour != 18){
-				var initialDate = new Date('2018-06-'+dia+' '+hour+':00:00');
-				var finalDate = new Date('2018-06-'+dia+' '+hour+':59:59');
-				console.log("consultado pulsaciones de "+initialDate.toString()+" a "+finalDate.toString());
-				var {rows} = await postgres.executeQuery('select avg(value)*60 as promedio_hour from datos where date between $1 and $2',[initialDate,finalDate]);
+			while(temporalDate < maxDate){
+				var temporalInitialDate = new Date(temporalDate);
+				var temporalFinalDate = new Date(temporalDate);
+				temporalFinalDate.setHours(temporalFinalDate.getHours() + 1);
+				//var initialDate = new Date('2018-06-'+dia+' '+hour+':00:00');
+				//var finalDate = new Date('2018-06-'+dia+' '+hour+':59:59');
+				console.log("consultado pulsaciones de "+temporalInitialDate.toString()+" a "+temporalFinalDate.toString());
+				//var {rows} = await postgres.executeQuery('select avg(value)*60 as promedio_hour from datos where date between $1 and $2',[initialDate,finalDate]);
+				var {rows} = await postgres.executeQuery('select avg(value)*60 as promedio_hour from datos_diagnostico_usuario_'+document+' where date between $1 and $2',[temporalInitialDate,temporalFinalDate]);
 				console.log(rows);
 				if(rows[0].promedio_hour != null){
 					minHeartRate = (rows[0].promedio_hour<minHeartRate)?rows[0].promedio_hour:minHeartRate;
 					maxHeartRate = (rows[0].promedio_hour>maxHeartRate)?rows[0].promedio_hour:maxHeartRate;
 					pulsaciones.push({
-					hour: initialDate,
+					hour: temporalInitialDate.toString(),
 					quantity: parseFloat(rows[0].promedio_hour)
 				})
 				}
-				if(hour+1 == 24){
+				/*if(hour+1 == 24){
 					hour = 0;
 					dia= dia + 1;
 				}else{
 					hour = hour + 1;
 				}
 				console.log("dia ",dia, " hour ", hour);
+				*/
+				temporalDate.setHours(temporalDate.getHours() + 1);
 			}
 			console.log(pulsaciones);
 			console.log("maxHeartRate", maxHeartRate);
@@ -315,9 +357,9 @@ router.get('/makeDiagnosis', function (request, response) {
 					}
 				}
 				quantityPulsaciones.push({
-					"rango": i,
+					"range": i,
 					"quantity": num,
-					"probabilidad": parseFloat(num/pulsaciones.length)
+					"probability": parseFloat(num/pulsaciones.length)
 				});
 			}
 
@@ -339,23 +381,21 @@ router.get('/makeDiagnosis', function (request, response) {
 
 			//Segunda validacion
 			var compataratorProbabilidad = function(a,b){
-				return b.probabilidad - a.probabilidad; 
-			}
+				return b.probability - a.probability; 
+			}		
 			range5.sort(compataratorProbabilidad);
 			quantityPulsaciones.sort(compataratorProbabilidad);
 
-			var range5max1 = range5[0].rango;
-			var range5max2 = range5[1].rango;
-			console.log("quantity rango 5 max 1", range5max1)
-			console.log("quantity rango 5 max 2", range5max2)
+			var range5max1 = range5[0];
+			var range5max2 = range5[1];
 
 			var criterioa = false;
 			var criteriob = false;
-			if(range5max1-range5max2>=15){
+			if(range5max1.range-range5max2.range>=15){
 				var criterioa = true;
 			}
 
-			if(quantityPulsaciones[0].probabilidad<0.217 || quantityPulsaciones[0].probabilidad>0.304){
+			if(quantityPulsaciones[0].probability<0.217 || quantityPulsaciones[0].probability>0.304){
 				var criteriob = true;
 			}
 
@@ -381,7 +421,7 @@ router.get('/makeDiagnosis', function (request, response) {
 
 			//tercera validacion
 			var holtersEnfermos = false;
-			var sumamaxesProbabilidades = range5max1 + range5max2;
+			var sumamaxesProbabilidades = range5max1.probability + range5max2.probability;
 			if(sumamaxesProbabilidades > 0.319){
 				holtersEnfermos = true;
 			}
@@ -410,6 +450,24 @@ router.get('/makeDiagnosis', function (request, response) {
 				"Diagnosis":(string1Punto.includes("disease") || string2Punto.includes("disease") || string3Punto.includes("Disease"))?"Not healthy, please consult your doctor":"Healthy",
 			}
 
+			var diagnosis = {
+				"document": document,
+				"date": new Date(),
+				"diagnosis": "First Analysis:"+string1Punto+", Second Analysis:"+string2Punto+", Third Analysis: "+string2Punto+", Diagnosis: "+responseAnalisis.Diagnosis
+			}
+
+			await postgres.executeQuery('BEGIN')
+			console.log("transaction begin: Inserting diagnosis");
+			const insertDiagnosisValues = [diagnosis.document,new Date(diagnosis.date),diagnosis.diagnosis]
+			await postgres.executeQuery('insert into diagnosis(patient,date,diagnosis) values ((select id from patient where document like $1),$2,$3)', insertDiagnosisValues)
+			console.log("diagnosis inserted");
+			await postgres.executeQuery('COMMIT')
+			console.log("transaction ended: commit");
+			console.log("drop temporary table datos_diagnostico_usuario_"+document+" with user data");
+			await postgres.executeQuery("DROP TABLE IF EXISTS datos_diagnostico_usuario_"+document,[]);
+			console.log("table dropped");
+
+			console.log("Sending response");
 			response.status(200).send(responseAnalisis).end();
 
 
