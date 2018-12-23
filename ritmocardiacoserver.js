@@ -205,6 +205,8 @@ router.get('/makeDiagnosis', function (request, response) {
 				"FROM " +
 					"heart_rate_measurement " +
 				"WHERE " +
+					"value != 0 " +
+					"AND " +
 					"patient = (SELECT id FROM patient WHERE document = $1) " +
 					"AND " +
 					"date >= (SELECT (MAX(DATE) - interval '21 hour') FROM heart_rate_measurement WHERE patient = (SELECT id FROM patient WHERE document = $2))" +	
