@@ -14,7 +14,7 @@ echo "Levantando contenedores"
 APP_PORT=$APP_PORT APP_HOST=$APP_HOST POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD POSTGRES_DB=$POSTGRES_DB docker-compose up -d
 
 echo "Waiting postgres"
-until APP_PORT=$APP_PORT APP_HOST=$APP_HOST POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD POSTGRES_DB=$POSTGRES_DB docker-compose exec postgresdb sh -c 'psql -U postgres -c "\c heartapp"' ; do
+until APP_PORT=$APP_PORT APP_HOST=$APP_HOST POSTGRES_USER=$POSTGRES_USER POSTGRES_PASSWORD=$POSTGRES_PASSWORD POSTGRES_DB=$POSTGRES_DB docker-compose exec postgresdb sh -c 'psql -U heartapp -c "\c heartapp"' ; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
