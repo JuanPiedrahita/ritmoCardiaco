@@ -491,10 +491,10 @@ app.use(router);
 postgres.connect()
 .then(()=>{
 	console.log("Postgres connected");
-	var server = app.listen(4040, function () {
+	var server = app.listen(process.env.APP_PORT, function () {
 		"use strict";
 		
-		var host = '0.0.0.0',
+		var host = process.env.APP_HOST,
 			port = server.address().port;
 		
 		console.log(' Server is listening at http://%s:%s', host, port);
@@ -502,7 +502,7 @@ postgres.connect()
 	  
 })
 .catch(()=>{
-	console.log("ERROR: Couldn't connect, please verify config.json");
+	console.log("ERROR: Couldn't connect, please verify the env file");
 	console.log("closing");
 	process.exit(2);
 });

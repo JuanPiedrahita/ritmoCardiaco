@@ -23,7 +23,8 @@ CREATE TABLE public.patient(
 	age integer NOT NULL,
 	weight numeric(5,2) NOT NULL,
 	height numeric(5,2) NOT NULL,
-	CONSTRAINT pk_patient PRIMARY KEY (id)
+	CONSTRAINT pk_patient PRIMARY KEY (id),
+	CONSTRAINT uq_document UNIQUE KEY (document)
 
 );
 -- ddl-end --

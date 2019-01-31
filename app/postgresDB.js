@@ -1,7 +1,8 @@
-const dbConfig = require('./config.json').postgres; 
+const dotenv = require('dotenv')
+dotenv.config()
 const pg = require('pg');
 
-const connectionString = `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.db}`;
+const connectionString = `postgres://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
 
 const client = new pg.Client(connectionString);
 
