@@ -22,6 +22,6 @@ services:
       - '$APP_PORT:$APP_PORT'
     volumes:
       - ./app:/home/node
-    command: sh -c 'cd home/node; APP_PORT=$APP_PORT APP_HOST=$APP_HOST node ritmocardiacoserver.js'
+    command: sh -c 'cd home/node; npm install;APP_PORT=$APP_PORT APP_HOST=$APP_HOST node ritmocardiacoserver.js'
     depends_on:
       - postgresdb
