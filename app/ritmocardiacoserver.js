@@ -486,6 +486,11 @@ router.get('/makeDiagnosis', function (request, response) {
 	})	
 });
 
+router.get('/', function (request, response) {
+	response = setHeaders(response);
+	response.status(200).send({ status : "ok", app : "Heart rate app"}).end();
+});
+
 app.use(router);
 
 postgres.connect()
