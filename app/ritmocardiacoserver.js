@@ -74,10 +74,10 @@ router.get('/getPatients',function(request,response){
 	var params = [];
 	var sql = "";
 	if(request.query.document != undefined){
-		sql = "select * from patient p, contact c where p.id=c.id and p.document like $1";
+		sql = "select * from patient p, contact c where p.id=c.patient and p.document like $1";
 		params.push(request.query.document);
 	} else {
-		sql = "select * from patient p, contact c where p.id=c.id";
+		sql = "select * from patient p, contact c where p.id=c.patient";
 	}
 	postgres.executeQuery(sql,params)
 	.then(res => {
@@ -94,10 +94,10 @@ router.get('/getPatients',function(request,response){
 router.post('/postPatient',function(request,response){
 	response = setHeaders(response);
 	console.log("post patient");
-	//console.log("body", request.body);
-	//var patient = JSON.parse(JSON.stringify(request.body));
-	console.log("query",request.query);
-	var patient = JSON.parse(JSON.stringify(request.query));
+	console.log("body", request.body);
+	var patient = JSON.parse(JSON.stringify(request.body));
+	//console.log("query",request.query);
+	//var patient = JSON.parse(JSON.stringify(request.query));
 	console.log("patient",patient);
 	(async () => {		
 		try {
@@ -106,7 +106,7 @@ router.post('/postPatient',function(request,response){
 			const insertpatientValues = [patient.document, patient.firstname, patient.lastname, parseInt(patient.age),parseFloat( patient.weight).toFixed(2), parseFloat(patient.height).toFixed(2)]
 			const { rows } = await postgres.executeQuery('INSERT INTO patient(document,firstname,lastname,age,weight,height) VALUES($1,$2,$3,$4,$5,$6) RETURNING id', insertpatientValues)
 			console.log("insert patient");
-			const insertcontactVaules = [rows[0].id, patient.mail, patient.phone, patient.address]
+       		const insertcontactVaules = [rows[0].id, patient.mail, patient.phone, patient.address]
 			await postgres.executeQuery('INSERT INTO contact(patient,mail,phone,address) VALUES($1,$2,$3,$4)', insertcontactVaules)
 			console.log("insert contact");
 			await postgres.executeQuery('COMMIT')
