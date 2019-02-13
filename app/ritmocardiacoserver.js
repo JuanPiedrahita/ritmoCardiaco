@@ -3,9 +3,17 @@ var app = express();
 var bodyParser = require("body-parser");
 var methodOverride = require("method-override");
 var postgres = require("./postgresDB.js");
+var cors = require("cors");
+
+corsOptions = {
+    origin: '*', 
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'], 
+    allowedHeaders: ['Content-Type', 'Authorization'] 
+};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors(corsOptions));
 
 var setHeaders = function(response){
 	response.header('Access-Control-Allow-Origin', '*');
