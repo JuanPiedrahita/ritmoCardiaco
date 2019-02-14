@@ -411,7 +411,7 @@ router.get('/makeDiagnosis', function (request, response) {
 
 			var numeroLatidosEnRango = false;
 			for (var i = 0; i<pulsaciones.length; i++){
-				if(3000>pulsaciones[i].quantity && pulsaciones[i].quantity>6250){
+				if(3000>pulsaciones[i].quantity || pulsaciones[i].quantity>6250){
 					numeroLatidosEnRango = true;
 				}
 			}
@@ -420,7 +420,7 @@ router.get('/makeDiagnosis', function (request, response) {
 				string2Punto = "Characteristic of disease by first test";
 			} 
 			if(!criterioa && criteriob && numeroLatidosEnRango){
-				string2Punto += "Characteristic of disease by second test"
+				string2Punto += "Characteristic of disease by third test"
 			}
 			if(!criterioa && criteriob){
 				string2Punto += "Characteristic of disease in evolution by third test"
