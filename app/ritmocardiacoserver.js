@@ -379,11 +379,11 @@ router.get('/makeDiagnosis', function (request, response) {
 
 			//Primera validacion
 			if(range5.length >17){
-				string1Punto = "Characteristic of normality"
+				string1Punto = "Characteristic of normality."
 			} else if(range5.length < 14){
-				string1Punto = "Characteristic of disease"
+				string1Punto = "Characteristic of disease."
 			} else {
-				string1Punto = "Inconclusive"
+				string1Punto = "Inconclusive."
 			}
 
 			console.log("range5", range5);
@@ -417,16 +417,13 @@ router.get('/makeDiagnosis', function (request, response) {
 			}
 
 			if(criterioa || (criterioa && criteriob)){
-				string2Punto = "Characteristic of disease by first test";
-			} 
-			if(!criterioa && criteriob && numeroLatidosEnRango){
-				string2Punto += "Characteristic of disease by third test"
-			}
-			if(!criterioa && criteriob){
-				string2Punto += "Characteristic of disease in evolution by third test"
-			} 
-			if(!criterioa && !criteriob){
-				string2Punto = "Healthy"
+				string2Punto = "Characteristic of disease by first test.";
+			} else if(!criterioa && criteriob){
+				string2Punto += "Characteristic of disease in evolution by second test."
+			} else if(!criterioa && criteriob && numeroLatidosEnRango){
+				string2Punto += "Characteristic of disease by third test."
+			} else if(!criterioa && !criteriob){
+				string2Punto = "Healthy. "
 			}
 
 			//tercera validacion
@@ -437,16 +434,13 @@ router.get('/makeDiagnosis', function (request, response) {
 			}
 
 			if(criterioa && criteriob && holtersEnfermos){
-				string3Punto = "Characteristic of disease by first test"
-			}
-			if(criteriob && holtersEnfermos){
-				string3Punto = "Characteristic of disease by second test"
-			}
-			if(criteriob && holtersEnfermos && numeroLatidosEnRango){
-				string3Punto = "Characteristic of disease by third test"
-			}
-			if(holtersEnfermos && !criterioa && !criteriob){
-				string3Punto = "Healthy"
+				string3Punto = "Characteristic of disease by first test."
+			} else if(criteriob && holtersEnfermos){
+				string3Punto = "Characteristic of disease by second test."
+			} else if(criteriob && holtersEnfermos && numeroLatidosEnRango){
+				string3Punto = "Characteristic of disease by third test. "
+			} else if (holtersEnfermos && !criterioa && !criteriob){
+				string3Punto = "Healthy. "
 			}
 
 			console.log("1 conclusión",string1Punto);
