@@ -457,7 +457,7 @@ router.get('/makeDiagnosis', function (request, response) {
 			var diagnosis = {
 				"document": document,
 				"date": new Date(),
-				"diagnosis": "First Analysis:"+string1Punto+", Second Analysis:"+string2Punto+", Third Analysis: "+string2Punto+", Diagnosis: "+responseAnalisis.Diagnosis
+				"diagnosis": "First Analysis:"+string1Punto+", Second Analysis:"+string2Punto+", Third Analysis: "+string3Punto+", Diagnosis: "+responseAnalisis.Diagnosis
 			}
 
 			await postgres.executeQuery('BEGIN')
